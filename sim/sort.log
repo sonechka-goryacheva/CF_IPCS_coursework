@@ -1,0 +1,28 @@
+WARNING: rtl/Instruction_ROM.v:20: $readmemb(sw/sort_rom.mem): Not enough words in the file for the requested range [0:2047].
+WARNING: rtl/Data_RAM.v:21: $readmemb(sw/sort_data.mem): Not enough words in the file for the requested range [0:255].
+VCD info: dumpfile sim/tb_sort.vcd opened for output.
+Массив до сортировки:
+  RAM[0] = 42
+  RAM[1] = 7
+  RAM[2] = 1000
+  RAM[3] = 7
+  RAM[4] = 0
+  RAM[5] = 65535
+  RAM[6] = 300
+  RAM[7] = 15
+  RAM[8] = 99
+  RAM[9] = 3
+Процессор остановлен (HLT) через 910 тактов
+Массив после сортировки:
+  RAM[0] = 0 (ожидалось 0)
+  RAM[1] = 3 (ожидалось 3)
+  RAM[2] = 7 (ожидалось 7)
+  RAM[3] = 7 (ожидалось 7)
+  RAM[4] = 15 (ожидалось 15)
+  RAM[5] = 42 (ожидалось 42)
+  RAM[6] = 99 (ожидалось 99)
+  RAM[7] = 300 (ожидалось 300)
+  RAM[8] = 1000 (ожидалось 1000)
+  RAM[9] = 65535 (ожидалось 65535)
+TEST PASSED: массив отсортирован верно
+tb/tb_sort.v:93: $finish called at 9135000 (1ps)

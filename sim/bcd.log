@@ -1,0 +1,2 @@
+TEST PASSED: BIN2BCD верен для всех 65536 входов
+tb/tb_bin2bcd.v:28: $finish called at 65536000 (1ps)
