@@ -7,6 +7,18 @@
 // =============================================================================
 `timescale 1ns/1ps
 
+// Имена файлов можно переопределить ключом компилятора, например:
+//   iverilog -DROM_FILE=\"sw/sort.rom.mem\" ...  (см. Makefile, цель sort-asm)
+`ifndef ROM_FILE
+`define ROM_FILE "sw/sort_rom.mem"
+`endif
+`ifndef RAM_FILE
+`define RAM_FILE "sw/sort_data.mem"
+`endif
+`ifndef VCD_FILE
+`define VCD_FILE "sim/tb_sort.vcd"
+`endif
+
 module tb_sort;
     reg         clk = 1'b0;
     reg         rst = 1'b1;
@@ -18,8 +30,8 @@ module tb_sort;
     always #5 clk = ~clk;
 
     soc_top #(
-        .ROM_FILE("sw/sort_rom.mem"),
-        .RAM_FILE("sw/sort_data.mem")
+        .ROM_FILE(`ROM_FILE),
+        .RAM_FILE(`RAM_FILE)
     ) dut (
         .clk(clk), .rst(rst),
         .key_press(1'b0), .key_code(4'd0), .key_valid(key_valid),
@@ -50,7 +62,7 @@ module tb_sort;
                      $time, pc, ir, r1, r2, r3, r4, flag_z, flag_c);
 
     initial begin
-        $dumpfile("sim/tb_sort.vcd");
+        $dumpfile(`VCD_FILE);
         $dumpvars(0, tb_sort);
 
         expected[0] = 16'd0;    expected[1] = 16'd3;
