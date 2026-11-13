@@ -34,6 +34,15 @@ sort-asm: asm-sort
 	iverilog -g2005 -Wall -DROM_FILE=\"sw/sort.rom.mem\" -DRAM_FILE=\"sw/sort.ram.mem\" -DVCD_FILE=\"sim/tb_sort_asm.vcd\" -o sim/sort_asm.vvp $(RTL) tb/tb_sort.v
 	vvp sim/sort_asm.vvp | tee sim/sort_asm.log
 
+# ---- этап 4: прошивка автомата (задача №4) ----
+asm-vending:
+	python3 tools/asm.py sw/vending.asm
+
+vending: asm-vending
+	@mkdir -p sim
+	iverilog -g2005 -Wall -o sim/vending.vvp $(RTL) tb/tb_vending.v
+	vvp sim/vending.vvp | tee sim/vending.log
+
 # Модульные тесты ассемблера
 test-asm:
 	python3 tools/test_asm.py
@@ -45,4 +54,4 @@ wave:
 clean:
 	rm -f sim/*.vvp sim/*.vcd sim/*.log
 
-.PHONY: sort sort-trace bcd wave asm-sort cmp-sort sort-asm test-asm clean
+.PHONY: sort sort-trace bcd wave asm-sort cmp-sort sort-asm test-asm asm-vending vending clean
