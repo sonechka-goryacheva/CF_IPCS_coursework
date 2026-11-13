@@ -43,6 +43,40 @@ vending: asm-vending
 	iverilog -g2005 -Wall -o sim/vending.vvp $(RTL) tb/tb_vending.v
 	vvp sim/vending.vvp | tee sim/vending.log
 
+# ---- этап 4: прошивка калькулятора (задача №21) ----
+asm-calc:
+	python3 tools/asm.py sw/calc.asm
+
+calc: asm-calc
+	@mkdir -p sim
+	iverilog -g2005 -Wall -o sim/calc.vvp $(RTL) tb/tb_calc.v
+	vvp sim/calc.vvp | tee sim/calc.log
+
+# ---- этап 5: интерактивный мост (клавиатура и экран ПК в Терминале) ----
+# VPI-модуль на C (неблокирующий ввод с клавиатуры + рисование индикаторов)
+vpi/kbd.vpi: vpi/kbd.c
+	cd vpi && iverilog-vpi kbd.c
+
+sim/play_calc.vvp: $(RTL) tb/tb_play.v asm-calc
+	@mkdir -p sim
+	iverilog -g2005 -DROM_FILE=\"sw/calc.rom.mem\" -DRAM_FILE=\"sw/calc.ram.mem\" -DPROGRAM=\"CALC\" -o sim/play_calc.vvp $(RTL) tb/tb_play.v
+
+sim/play_vending.vvp: $(RTL) tb/tb_play.v asm-vending
+	@mkdir -p sim
+	iverilog -g2005 -DROM_FILE=\"sw/vending.rom.mem\" -DRAM_FILE=\"\" -DPROGRAM=\"VENDING\" -o sim/play_vending.vvp $(RTL) tb/tb_play.v
+
+# Играть: калькулятор / автомат (выход - клавиша q)
+play-calc: vpi/kbd.vpi sim/play_calc.vvp
+	vvp -M vpi -mkbd sim/play_calc.vvp
+
+play-vending: vpi/kbd.vpi sim/play_vending.vvp
+	vvp -M vpi -mkbd sim/play_vending.vvp
+
+# Стресс-тест моста: длинные серии случайных нажатий против эталонных моделей
+stress: vpi/kbd.vpi sim/play_calc.vvp sim/play_vending.vvp
+	python3 tools/stress.py calc 2000 1
+	python3 tools/stress.py vending 1000 1
+
 # Модульные тесты ассемблера
 test-asm:
 	python3 tools/test_asm.py
@@ -52,6 +86,6 @@ wave:
 	gtkwave sim/tb_sort.vcd &
 
 clean:
-	rm -f sim/*.vvp sim/*.vcd sim/*.log
+	rm -f sim/*.vvp sim/*.vcd sim/*.log vpi/*.vpi vpi/*.o
 
-.PHONY: sort sort-trace bcd wave asm-sort cmp-sort sort-asm test-asm asm-vending vending clean
+.PHONY: sort sort-trace bcd wave asm-sort cmp-sort sort-asm test-asm asm-vending vending asm-calc calc play-calc play-vending stress clean

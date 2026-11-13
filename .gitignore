@@ -5,3 +5,5 @@ a.out
 hello
 .DS_Store
 __pycache__/
+vpi/*.vpi
+vpi/*.o
