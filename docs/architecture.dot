@@ -1,0 +1,62 @@
+digraph SoC {
+  rankdir=TB;
+  fontname="DejaVu Sans";
+  nodesep=0.45; ranksep=0.6; compound=true; splines=true; newrank=true;
+  node [shape=box, style="rounded,filled", fontname="DejaVu Sans", fontsize=12, fillcolor="#FFFFFF", color="#444444", penwidth=1.3, margin="0.18,0.10"];
+  edge [fontname="DejaVu Sans", fontsize=10, color="#555555", arrowsize=0.8];
+
+  bridge [label="Интерактивный мост / Testbench\n(клавиатура ПК → key_press, key_code;\nвывод: индикаторы, LED)", fillcolor="#FFF4D6", color="#B8860B"];
+
+  subgraph cluster_soc {
+    label="soc_top   (clk, rst)"; labeljust=l; fontsize=14; fontname="DejaVu Sans Bold";
+    style="rounded,filled"; fillcolor="#F4F6F8"; color="#2F4858"; penwidth=2;
+
+    rom [label="Instruction_ROM\n2048 × 16 бит\n0x000–0x7FF", fillcolor="#E3F0FF", color="#1F5FA8"];
+
+    subgraph cluster_cpu {
+      label="CPU_Core"; labeljust=l; fontsize=13; style="rounded,filled"; fillcolor="#E8F5E9"; color="#2E7D32";
+      pc  [label="Program_Counter\nPC (11 бит)"];
+      cu  [label="Control_Unit\n(конечный автомат)", fillcolor="#C8E6C9"];
+      rf  [label="Register_File\nR0–R7 × 16 бит, R0 = 0"];
+      alu [label="ALU\nADD SUB AND OR XOR NOT SHL SHR CMP\n+ BIN2BCD · флаги Z, C"];
+    }
+
+    subgraph cluster_mem {
+      label="Memory_Top   (данные)"; labeljust=l; fontsize=13; style="rounded,filled"; fillcolor="#FFF3E0"; color="#E65100";
+      dec [label="MMIO_Decoder\n(адрес → RAM / MMIO)", fillcolor="#FFE0B2"];
+      ram [label="Data_RAM\n256 × 16 бит\n0x0000–0x00FF"];
+      key [label="KEY_STATUS / KEY_DATA\n0xFF00–0xFF01"];
+      led [label="LED\n0xFF02"];
+      seg [label="SEG (4 × 7-seg)\n0xFF03"];
+    }
+  }
+
+  // instruction path
+  pc  -> rom  [label=" pc "];
+  rom -> cu   [label=" instr[15:0] "];
+  cu  -> pc   [label=" ветвление / JUMP / HLT "];
+  rf  -> pc   [label=" JR ", style=dashed];
+
+  // control
+  cu  -> rf   [label=" ctrl "];
+  cu  -> alu  [label=" ctrl "];
+  alu -> cu   [label=" Z, C "];
+
+  // datapath
+  rf  -> alu  [label=" rs, rt "];
+  alu -> rf   [label=" результат "];
+  alu -> dec  [label=" адрес "];
+  rf  -> dec  [label=" данные STORE "];
+  dec -> rf   [label=" данные LOAD "];
+
+  // memory & peripherals
+  dec -> ram;
+  dec -> key;
+  dec -> led;
+  dec -> seg;
+
+  // bridge
+  bridge -> key [label=" key_press, key_code "];
+  seg -> bridge [label=" 4 разряда "];
+  led -> bridge [label=" led[15:0] "];
+}
