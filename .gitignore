@@ -1,0 +1,7 @@
+*.vcd
+*.vvp
+*.out
+a.out
+hello
+.DS_Store
+__pycache__/
